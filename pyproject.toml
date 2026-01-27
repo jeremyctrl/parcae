@@ -15,5 +15,9 @@ train = [
     "matplotlib>=3.10.8",
 ]
 
+[tool.setuptools]
+packages = ["parcae"]
+include-package-data = true
+
 [tool.setuptools.data-files]
 models = ["models/hmm.npz"]
