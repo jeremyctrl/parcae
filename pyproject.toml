@@ -15,6 +15,9 @@ train = [
     "pandas>=3.0.0",
 ]
 
+[project.scripts]
+parcae = "parcae.cli:main"
+
 [tool.setuptools]
 packages = ["parcae"]
 include-package-data = true
