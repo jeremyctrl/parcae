@@ -73,6 +73,8 @@ def main():
     print(f"[=] kept {kept} users")
     print(f"[=] skipped {skipped} users")
 
+    start_times = [t.tz_convert(None) for t in start_times]
+
     np.savez_compressed(
         BINNED_DATASET,
         X=np.array(X, dtype=object),
