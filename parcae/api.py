@@ -25,6 +25,32 @@ def _forward_log(obs, log_trans, log_emit, log_init):
     return _logsumexp(alpha[T - 1])
 
 
+def _viterbi(obs, log_trans, log_emit, log_init):
+    T = len(obs)
+    dp = np.zeros((T, 2))
+    back = np.zeros((T, 2), dtype=np.uint8)
+
+    dp[0] = log_init + log_emit[:, obs[0]]
+
+    for t in range(1, T):
+        for j in range(2):
+            scores = dp[t - 1] + log_trans[:, j]
+            k = np.argmax(scores)
+            dp[t, j] = scores[k] + log_emit[j, obs[t]]
+            back[t, j] = k
+
+    last = np.argmax(dp[T - 1])
+    best = dp[T - 1, last]
+
+    path = np.zeros(T, dtype=np.int8)
+    path[T - 1] = last
+
+    for t in range(T - 2, -1, -1):
+        path[t] = back[t + 1, path[t + 1]]
+
+    return path, best
+
+
 class Parcae:
     def __init__(self, model_path=None, bin_minutes=15):
         if model_path is None:
@@ -105,4 +131,43 @@ class Parcae:
                 best_score = score
                 best_phi = phi
 
-        return {"timezone_offset_hours": int(best_phi)}
+        shift_bins = int(best_phi * bins_per_day / 24)
+        best_bins = np.roll(bins, shift_bins)
+
+        states, _ = _viterbi(
+            best_bins, self.log_transmat, self.log_emissionprob, self.log_startprob
+        )
+
+        sleep_blocks = []
+        awake_blocks = []
+
+        current_state = states[0]
+        block_start = 0
+
+        for i in range(1, len(states)):
+            if states[i] != current_state:
+                (
+                    sleep_blocks if current_state == self.sleep_state else awake_blocks
+                ).append((block_start, i))
+
+                block_start = i
+                current_state = states[i]
+
+        if current_state == self.sleep_state:
+            sleep_blocks.append((block_start, len(states)))
+        else:
+            awake_blocks.append((block_start, len(states)))
+
+        def blocks_to_time(blocks):
+            out = []
+            for a, b in blocks:
+                t0 = start_time + timedelta(minutes=self.bin_minutes * a)
+                t1 = start_time + timedelta(minutes=self.bin_minutes * b)
+                out.append({"start": t0.isoformat(), "end": t1.isoformat()})
+            return out
+
+        return {
+            "timezone_offset_hours": int(best_phi),
+            "sleep_blocks": blocks_to_time(sleep_blocks),
+            "awake_blocks": blocks_to_time(awake_blocks),
+        }
