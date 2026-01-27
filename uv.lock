@@ -349,13 +349,13 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "numpy" },
-    { name = "pandas" },
 ]
 
 [package.optional-dependencies]
 train = [
     { name = "hmmlearn" },
     { name = "matplotlib" },
+    { name = "pandas" },
 ]
 
 [package.metadata]
@@ -363,7 +363,7 @@ requires-dist = [
     { name = "hmmlearn", marker = "extra == 'train'", specifier = ">=0.3.3" },
     { name = "matplotlib", marker = "extra == 'train'", specifier = ">=3.10.8" },
     { name = "numpy", specifier = ">=2.4.1" },
-    { name = "pandas", specifier = ">=3.0.0" },
+    { name = "pandas", marker = "extra == 'train'", specifier = ">=3.0.0" },
 ]
 provides-extras = ["train"]
 

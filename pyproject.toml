@@ -6,13 +6,13 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "numpy>=2.4.1",
-    "pandas>=3.0.0",
 ]
 
 [project.optional-dependencies]
 train = [
     "hmmlearn>=0.3.3",
     "matplotlib>=3.10.8",
+    "pandas>=3.0.0",
 ]
 
 [tool.setuptools]
