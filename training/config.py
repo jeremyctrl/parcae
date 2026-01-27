@@ -11,3 +11,5 @@ MIN_DAYS = 7
 
 DATA_CSV = DATA_DIR / "data.csv"
 BINNED_DATASET = DATA_DIR / f"users_{BIN_MINUTES}.npz"
+
+RANDOM_SEED = 42
