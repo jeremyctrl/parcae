@@ -1,12 +1,17 @@
 [project]
 name = "parcae"
 version = "0.1.0"
-description = "Add your description here"
+description = "Infer daily rhythm and sleep schedule from message timestamps"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "numpy>=2.4.1",
 ]
+
+[project.urls]
+Homepage = "https://github.com/jeremyctrl/parcae"
+Repository = "https://github.com/jeremyctrl/parcae"
+Issues = "https://github.com/jeremyctrl/parcae/issues"
 
 [project.optional-dependencies]
 train = [
