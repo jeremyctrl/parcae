@@ -51,7 +51,7 @@ def circular_mean_minutes(values):
 def main():
     parser = argparse.ArgumentParser(prog="parcae")
     parser.add_argument("csv", help="CSV file with a 'timestamp' column")
-    parser.add_argument("-v", "--version", action="version", version="%(prog)s 0.1.0")
+    parser.add_argument("-v", "--version", action="version", version="%(prog)s 0.1.1")
     args = parser.parse_args()
 
     print("+ Parcae analysis\n")
