@@ -1,6 +1,9 @@
 import argparse
+import base64
 import csv
 import math
+
+import numpy as np
 
 from parcae import Parcae
 
@@ -59,9 +62,16 @@ def main():
 
     mean_start = angle_to_minutes(sleep_phase[0], sleep_phase[1])
     mean_end = angle_to_minutes(sleep_phase[2], sleep_phase[3])
-    
+
     std_dur = int(round(sleep_stats[1] * 1440))
     med_dur = int(round(sleep_stats[2] * 1440))
+
+    vec = np.concatenate(
+        [result["profile_24h"], result["sleep_phase"], result["sleep_stats"]]
+    ).astype(np.float32)
+
+    q = np.round(vec * 4096).astype(np.int16)
+    fp = base64.urlsafe_b64encode(q.tobytes()).decode()
 
     print("+ typical schedule:")
     print(
@@ -69,6 +79,9 @@ def main():
     )
     print(f"\t- awake: {format_hm(mean_end)} -> {format_hm(mean_start)}")
     print(f"\t- variability: ±{std_dur}m\n")
+
+    print("+ fingerprint:")
+    print(f"\tparcae:v1:{fp}\n")
 
     print(f"~ based on {days} days of data")
     print(f"~ bin size: {p.bin_minutes} minutes")
