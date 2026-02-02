@@ -87,7 +87,7 @@ def hour_labels(n=24, marks=(0, 6, 12, 18, 24)):
 
 def main():
     parser = argparse.ArgumentParser(prog="parcae")
-    sub = parser.add_subparsers(dest="cmd")
+    sub = parser.add_subparsers(dest="cmd", required=True)
 
     p_analyze = sub.add_parser("analyze")
     p_analyze.add_argument("csv", help="CSV file with a 'timestamp' column")
