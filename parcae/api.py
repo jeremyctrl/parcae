@@ -210,4 +210,5 @@ class Parcae:
             "profile_24h": profile_24h,
             "sleep_phase": sleep_phase,
             "sleep_stats": sleep_stats.astype(np.float32),
+            "days": int(days),
         }
