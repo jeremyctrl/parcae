@@ -116,15 +116,9 @@ class Parcae:
         start_time, bins = self._bin(ts)
 
         bins_per_day = (24 * 60) // self.bin_minutes
-        days = len(bins) // bins_per_day
-        day_matrix = bins[: days * bins_per_day].reshape(days, bins_per_day)
 
         if len(bins) < 2 * bins_per_day:  # arbitrary number that seems fine
             raise ValueError("not enough data after binning (need at least ~2 days)")
-
-        profile = day_matrix.mean(axis=0)
-        profile = profile / (profile.sum() + 1e-8)
-        profile_24h = _downsample(profile, 24)
 
         best_phi = 0
         best_score = -np.inf
@@ -146,6 +140,13 @@ class Parcae:
 
         shift_bins = int(best_phi * bins_per_day / 24)
         best_bins = np.roll(bins, shift_bins)
+
+        days = len(best_bins) // bins_per_day
+        day_matrix = best_bins[: days * bins_per_day].reshape(days, bins_per_day)
+
+        profile = day_matrix.mean(axis=0)
+        profile = profile / (profile.sum() + 1e-8)
+        profile_24h = _downsample(profile, 24)
 
         states, _ = _viterbi(
             best_bins, self.log_transmat, self.log_emissionprob, self.log_startprob
