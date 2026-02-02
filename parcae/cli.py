@@ -39,13 +39,50 @@ def angle_to_minutes(sin_v, cos_v):
     return int(round(ang * 1440 / (2 * math.pi)))
 
 
+def decode_fp(s):
+    s = s.split(":", 2)[2]
+    raw = base64.urlsafe_b64decode(s)
+    q = np.frombuffer(raw, dtype=np.int16)
+    return q.astype(np.float32) / 4096.0
+
+
+def cosine(a, b):
+    return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
+
+
 def main():
     parser = argparse.ArgumentParser(prog="parcae")
-    parser.add_argument("csv", help="CSV file with a 'timestamp' column")
+    sub = parser.add_subparsers(dest="cmd")
+
+    p_analyze = sub.add_parser("analyze")
+    p_analyze.add_argument("csv", help="CSV file with a 'timestamp' column")
+
+    p_cmp = sub.add_parser("compare")
+    p_cmp.add_argument("fp1")
+    p_cmp.add_argument("fp2")
+
     parser.add_argument("-v", "--version", action="version", version="%(prog)s 0.1.1")
+
     args = parser.parse_args()
 
     print("+ Parcae analysis\n")
+
+    if args.cmd == "compare":
+        v1 = decode_fp(args.fp1)
+        v2 = decode_fp(args.fp2)
+        sim = cosine(v1, v2)
+
+        print("+ fingerprint comparison:")
+        print(f"\tcosine similarity: {sim:.4f}")
+
+        if sim > 0.95:
+            print("\tmatch: very likely same user")
+        elif sim > 0.90:
+            print("\tmatch: probable")
+        else:
+            print("\tmatch: unlikely")
+
+        return
 
     timestamps = parse_csv(args.csv)
 
