@@ -74,7 +74,13 @@ timestamp
 ```
 
 ```bash
-parcae user_timestamps.csv
+parcae analyze user_timestamps.csv
+```
+
+Compare two fingerprints to estimate whether they belong to the same person:
+
+```bash
+parcae compare parcae:v1:<fp1> parcae:v1:<fp2>
 ```
 
 #### Examples
@@ -85,8 +91,17 @@ parcae user_timestamps.csv
 ~ inferred timezone: UTC+3
 
 + typical schedule:
-        - sleep: 02:46 -> 11:38  (≈ 8h 45m)
-        - awake: 11:38 -> 02:46
+        - sleep: 23:52 -> 06:34  (≈ 8h 30m)
+        - awake: 06:34 -> 23:52
+        - variability: ±175m
+
++ activity profile (24h):
+        ▁▁▁▁▁▁▁▁▅▇▅█▆▁▅▄▅▆▁▇▇▆▆▇
+        |     |     |     |     
+        00    06    12    18    
+
++ fingerprint:
+        parcae:v1:AAAAAAAAAAAAAAAAAAAAAD0AWQA6AGMAQQAAADoAMAA6AEcAAABWAFUATgBMAFsAd__-D9QPqP12BPEBqwU=
 
 ~ based on 30 days of data
 ~ bin size: 15 minutes
