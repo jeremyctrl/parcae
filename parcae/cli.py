@@ -96,7 +96,7 @@ def main():
     p_cmp.add_argument("fp1")
     p_cmp.add_argument("fp2")
 
-    parser.add_argument("-v", "--version", action="version", version="%(prog)s 0.1.1")
+    parser.add_argument("-v", "--version", action="version", version="%(prog)s 0.2.0")
 
     args = parser.parse_args()
 
