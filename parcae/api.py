@@ -171,6 +171,29 @@ class Parcae:
         else:
             awake_blocks.append((block_start, len(states)))
 
+        sleep_durations = [(b - a) * self.bin_minutes for a, b in sleep_blocks]
+
+        if sleep_durations:
+            dur = np.array(sleep_durations, dtype=np.float32)
+            sleep_stats = np.array([dur.mean(), dur.std(), np.median(dur)]) / 1440.0
+        else:
+            sleep_stats = np.zeros(3, dtype=np.float32)
+
+        if sleep_blocks:
+            starts = np.array([a for a, _ in sleep_blocks]) * self.bin_minutes
+            ends = np.array([b for _, b in sleep_blocks]) * self.bin_minutes
+
+            start_m = starts.mean()
+            end_m = ends.mean()
+
+            def circ(m):
+                ang = 2 * np.pi * m / 1440.0
+                return np.sin(ang), np.cos(ang)
+
+            sleep_phase = np.array([*circ(start_m), *circ(end_m)], dtype=np.float32)
+        else:
+            sleep_phase = np.zeros(4, dtype=np.float32)
+
         def blocks_to_time(blocks):
             out = []
             for a, b in blocks:
@@ -184,4 +207,6 @@ class Parcae:
             "sleep_blocks": blocks_to_time(sleep_blocks),
             "awake_blocks": blocks_to_time(awake_blocks),
             "profile_24h": profile_24h,
+            "sleep_phase": sleep_phase,
+            "sleep_stats": sleep_stats.astype(np.float32),
         }
