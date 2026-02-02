@@ -51,6 +51,22 @@ def _viterbi(obs, log_trans, log_emit, log_init):
     return path, best
 
 
+def _parse_timestamps(timestamps):
+    out = []
+    for t in timestamps:
+        if isinstance(t, datetime):
+            out.append(t)
+        else:
+            out.append(datetime.fromisoformat(str(t)))
+    return sorted(out)
+
+
+def _downsample(x, k):
+    n = len(x)
+    idx = np.linspace(0, n, k + 1, dtype=int)
+    return np.array([x[idx[i] : idx[i + 1]].mean() for i in range(k)], dtype=np.float32)
+
+
 class Parcae:
     def __init__(self, model_path=None, bin_minutes=15):
         if model_path is None:
@@ -72,15 +88,6 @@ class Parcae:
         self.sleep_state = int(np.argmin(self.emissionprob[:, 1]))
         self.awake_state = 1 - self.sleep_state
 
-    def _parse_timestamps(self, timestamps):
-        out = []
-        for t in timestamps:
-            if isinstance(t, datetime):
-                out.append(t)
-            else:
-                out.append(datetime.fromisoformat(str(t)))
-        return sorted(out)
-
     def _bin(self, timestamps):
         start = timestamps[0].replace(hour=0, minute=0, second=0, microsecond=0)
         end = timestamps[-1].replace(
@@ -100,7 +107,7 @@ class Parcae:
         return start, bins
 
     def analyze(self, timestamps, tz_range=range(-12, 13)):
-        ts = self._parse_timestamps(timestamps)
+        ts = _parse_timestamps(timestamps)
 
         span = ts[-1] - ts[0]
         if span < timedelta(days=2):  # arbitrary number that seems fine
@@ -109,9 +116,15 @@ class Parcae:
         start_time, bins = self._bin(ts)
 
         bins_per_day = (24 * 60) // self.bin_minutes
+        days = len(bins) // bins_per_day
+        day_matrix = bins[: days * bins_per_day].reshape(days, bins_per_day)
 
         if len(bins) < 2 * bins_per_day:  # arbitrary number that seems fine
             raise ValueError("not enough data after binning (need at least ~2 days)")
+
+        profile = day_matrix.mean(axis=0)
+        profile = profile / (profile.sum() + 1e-8)
+        profile_24h = _downsample(profile, 24)
 
         best_phi = 0
         best_score = -np.inf
@@ -170,4 +183,5 @@ class Parcae:
             "timezone_offset_hours": int(best_phi),
             "sleep_blocks": blocks_to_time(sleep_blocks),
             "awake_blocks": blocks_to_time(awake_blocks),
+            "profile_24h": profile_24h,
         }
