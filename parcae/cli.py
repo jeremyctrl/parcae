@@ -50,6 +50,41 @@ def cosine(a, b):
     return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
 
 
+def sparkline(x):
+    ticks = "▁▂▃▄▅▆▇█"
+    x = np.asarray(x, dtype=float)
+
+    lo = x.min()
+    hi = x.max()
+
+    if hi == lo:
+        return ticks[0] * len(x)
+
+    scaled = (x - lo) / (hi - lo) * (len(ticks) - 1)
+    idx = np.round(scaled).astype(int)
+
+    return "".join(ticks[i] for i in idx)
+
+
+def hour_axis(n=24, marks=(0, 6, 12, 18, 24)):
+    row = [" "] * n
+    for m in marks:
+        if m < n:
+            row[m] = "|"
+    return "".join(row)
+
+
+def hour_labels(n=24, marks=(0, 6, 12, 18, 24)):
+    row = [" "] * n
+    for m in marks:
+        s = f"{m:02d}"
+        if m < n:
+            for i, c in enumerate(s):
+                if m + i < n:
+                    row[m + i] = c
+    return "".join(row)
+
+
 def main():
     parser = argparse.ArgumentParser(prog="parcae")
     sub = parser.add_subparsers(dest="cmd")
@@ -97,6 +132,8 @@ def main():
     sleep_phase = result["sleep_phase"]
     sleep_stats = result["sleep_stats"]
 
+    profile_24h = result["profile_24h"]
+
     mean_start = angle_to_minutes(sleep_phase[0], sleep_phase[1])
     mean_end = angle_to_minutes(sleep_phase[2], sleep_phase[3])
 
@@ -104,7 +141,7 @@ def main():
     med_dur = int(round(sleep_stats[2] * 1440))
 
     vec = np.concatenate(
-        [result["profile_24h"], result["sleep_phase"], result["sleep_stats"]]
+        [profile_24h, result["sleep_phase"], result["sleep_stats"]]
     ).astype(np.float32)
 
     q = np.round(vec * 4096).astype(np.int16)
@@ -116,6 +153,11 @@ def main():
     )
     print(f"\t- awake: {format_hm(mean_end)} -> {format_hm(mean_start)}")
     print(f"\t- variability: ±{std_dur}m\n")
+
+    print("+ activity profile (24h):")
+    print(f"\t{sparkline(profile_24h)}")
+    print(f"\t{hour_axis(len(profile_24h))}")
+    print(f"\t{hour_labels(len(profile_24h))}\n")
 
     print("+ fingerprint:")
     print(f"\tparcae:v1:{fp}\n")
